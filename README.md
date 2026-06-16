@@ -1,4 +1,8 @@
 4th semester practicum materials at SPbU SE
 
 
-[![CC BY-ND 4.0][cc-by-nd-shield]][cc-by-nd]
+[![CC BY-SA 4.0][cc-by-sa-shield]][cc-by-sa]
+
+
+[cc-by-sa]: http://creativecommons.org/licenses/by-sa/4.0/
+[cc-by-sa-shield]: https://img.shields.io/badge/License-CC%20BY--SA%204.0-lightgrey.svg
