@@ -1,0 +1,306 @@
+% !TEX TS-program = xelatex
+% !BIB program = bibtex
+% !TeX spellcheck = ru_RU
+% !TEX root = talk.tex
+
+\documentclass
+  [ russian
+  , aspectratio=43
+  ] {beamer}
+
+
+\input{preamble.tex}
+\makeatletter
+
+% ------------------------------------------
+
+\usepackage[HTML, dvipsnames]{xcolor}
+\setbeamercolor{item}{fg=red}
+
+\usepackage{listings}
+\usepackage{listingsutf8}
+
+\lstdefinelanguage{ML}{
+  keywords={type, match, with, let, rec, in, fun, function, of, if, then, else},
+  keywordstyle=\color{Maroon}\bfseries,
+  identifierstyle=\color{black},
+  morecomment=[s]{(*}{*)},
+  commentstyle=\color{gray},
+  morestring=[b]",
+  stringstyle=\color{green},
+}
+
+\lstset{
+    basicstyle=\ttfamily\scriptsize,
+    showstringspaces=false
+}
+
+\setmonofont{DejaVu Sans Mono}
+
+\setbeamertemplate{itemize subitem}{\usebeamertemplate{itemize item}}
+\setbeamertemplate{itemize subsubitem}{\usebeamertemplate{itemize item}}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codeblack}{rgb}{0,0,0}
+\definecolor{colorprint1}{HTML}{E37DCB}
+\definecolor{colorprint2}{HTML}{E3C87D}
+\definecolor{colorprint3}{HTML}{7DE395}
+\definecolor{colorprint4}{HTML}{7D98E3}
+
+\usepackage{capt-of}
+\usepackage{caption}
+\captionsetup[figure]{labelformat=empty, font={scriptsize}}
+
+% ------------------------------------------
+
+\input{pretitle.tex}
+\input{title.tex}
+
+\newcommand{\academicGroup}{\my@title@group@ru}
+\newcommand{\advisorChair}{\my@title@chair@ru}
+\title[Самовоспроизводящийся компилятор]{\my@title@title@ru}
+\author[\my@title@author@ru]{\my@title@author@ru, группа \academicGroup}
+\institute[СПбГУ]{}
+\date[2 июня 2026 г.]{}
+\newcommand{\supervisor}{\my@title@supervisor@ru}
+\newcommand{\supervisorPosition}{\my@title@supervisorPosition@ru}
+\newcommand{\consultant}{\my@title@consultant@ru}
+\newcommand{\consultantPosition}{\my@title@consultantPosition@ru}
+\newcommand{\reviewer}{\my@title@reviewer@ru}
+\newcommand{\reviewerPosition}{\my@title@reviewerPosition@ru}
+\newcommand{\defenseYear}{\my@title@year@ru}
+
+\makeatother
+\begin{document}
+
+\begin{frame}
+    \includegraphics[width=1.4cm]{figures/SPbGU_Logo.png}
+    \vspace{-35pt}
+    \hspace{-10pt}
+    \begin{center}
+        \begin{tabular}{c}
+            \scriptsize{Санкт-Петербургский государственный университет} \\
+            \scriptsize{\advisorChair}
+        \end{tabular}
+        \titlepage
+    \end{center}
+
+    \btVFill
+
+    {\scriptsize
+        \textbf{Научный руководитель:}  \supervisorPosition~\supervisor \\
+    }
+    \makeatother
+    \begin{center}
+        \vspace{5pt}
+        \scriptsize{Санкт-Петербург\\ \defenseYear}
+    \end{center}
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{Постановка задачи}
+    \textbf{Целью} работы является обеспечение возможности сборки языковых инструментов с помощью rukaml
+    \vspace{1em}
+
+    \textbf{Задачи}:
+    \begin{itemize}
+        \item Расширение стандартной библиотеки:
+              \begin{itemize}
+                  \item Работа с файловой системой
+                  \item Обработка аргументов командной строки
+                  \item Форматированный вывод
+              \end{itemize}
+        \item Реализация манглирования имён и разрешения внешних ссылок
+        \item Реализация простого компилятора и его сборка с помощью rukaml
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{Замечание}
+    \begin{itemize}
+        \item Все последующие примеры кода — программы, которые компилируются с помощью rukaml
+        \item Эти примеры показывают, как написание кода выглядит для пользователя
+        \item Они не имеют отношения к внутреннему устройству rukaml
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+    \frametitle{Расширение стандартной библиотеки}
+
+    Форматированный вывод
+
+    \begin{lstlisting}[
+        language=ML,
+        columns=fullflexible,
+        stringstyle=\color{codegreen},
+        emph={fprintf},
+        emphstyle=\bfseries\color{codeblack}
+    ]
+let rec pp_pexpr oc e =
+    match e with
+    | Pexpr_binop (op, e1, e2) ->
+        fprintf oc "(%a %a %a)" pp_pexpr e1 pp_pbinop op pp_pexpr e2
+    | Pexpr_assign (v, e) ->
+        fprintf oc "%s = %a" v pp_pexpr e
+    | Pexpr_tern (c, t, e) ->
+        fprintf oc "%a ? %a : %a" pp_pexpr c pp_pexpr t pp_pexpr e
+    | ...
+    \end{lstlisting}
+
+    Обработка аргументов командной строки и работа с файловой системой
+
+    \begin{lstlisting}[
+        language=ML,
+        columns=fullflexible,
+        emph={sys_argv, open_in, open_out, input_all, close_in, close_out},
+        emphstyle=\bfseries\color{codeblack}
+    ]
+let main =
+  let input_path, output_path = parse_args sys_argv in
+  let input_channel = open_in input_path in
+  let output_channel = open_out output_path in
+  let () = run_program output_channel (input_all input_channel) in
+  let () = close_in input_channel in
+  let () = close_out output_channel in
+  exit 0
+    \end{lstlisting}
+
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{\fontsize{13pt}{15.6pt}\selectfont Манглирование имён и разрешение внешних ссылок [1/2]}
+    \begin{itemize}
+        \item Обеспечение валидности генерируемых ассемблерных меток и предотвращение их коллизий
+        \item Поддержание таблиц для сопоставления ассемблерных меток исходным именам
+        \item Разрешение синонимов для примитивов стандартной библиотеки
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+    \frametitle{\fontsize{13pt}{15.6pt}\selectfont Манглирование имён и разрешение внешних ссылок [2/2]}
+    Пример кода, для которого разрешение имён корректно работает
+
+    \begin{lstlisting}[
+    language=ML,
+    escapechar=|,
+    basicstyle=\ttfamily\footnotesize,
+    columns=fullflexible
+]
+  (* |$\textcolor{colorprint1}{\textbf{print}}$| is defined somewhere |$\textcolor{gray}{\texttt{in}}$| stdlib *)
+
+  let () = |$\textcolor{colorprint1}{\textbf{print}}$| 42
+  let () =
+      let |$\textcolor{colorprint2}{\textbf{print}}$| _ = () in
+      |$\textcolor{colorprint2}{\textbf{print}}$| 42
+  let () = |$\textcolor{colorprint1}{\textbf{print}}$| 42
+  let |$\textcolor{colorprint3}{\textbf{print}}$| _ = ()
+  let () = |$\textcolor{colorprint3}{\textbf{print}}$| 42
+  let () =
+      let |$\textcolor{colorprint4}{\textbf{print}}$| _ = () in
+      |$\textcolor{colorprint4}{\textbf{print}}$| 42
+  let () = |$\textcolor{colorprint3}{\textbf{print}}$| 42
+\end{lstlisting}
+\end{frame}
+
+
+\begin{frame}[fragile]
+    \frametitle{Компилятор, собираемый с помощью rukaml [1/3]}
+    \begin{itemize}
+        \item Создан с целью проверки возможностей rukaml
+        \item Представляет собой простой компилятор подмножества языка C в язык ассемблера RISC-V 64
+        \item Включает в себя:
+              \begin{itemize}
+                  \item Определение AST
+                  \item Синтаксический анализатор
+                  \item Pretty-printer
+                  \item Модуль кодогенерации
+                  \item Обработку аргументов командной строки, чтение входных данных, вывод результата работы
+              \end{itemize}
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+    \frametitle{Компилятор, собираемый с помощью rukaml [2/3]}
+
+    Пример программы, которую он способен собрать
+
+    \begin{lstlisting}[language=C, keywordstyle=\color{Maroon}\bfseries]
+int fact_rec(int n) {
+    if (n < 1) {
+        return 1;
+    }
+    return n * fact_rec(n - 1);
+}
+
+int fact_iter(int n) {
+    int acc = 1;
+    for (int i = 2; i <= n; i = i + 1) {
+        acc = acc * i;
+    }
+    return acc;
+}
+
+int main() {
+    return 144 - fact_rec(4) - fact_iter(5);
+}
+\end{lstlisting}
+
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{Компилятор, собираемый с помощью rukaml [3/3]}
+
+    \begin{columns}[c]
+        \begin{column}{0.35\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{figures/scheme.png}
+            \captionof{figure}{Упрощенная схема архитектуры}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{itemize}
+                \item \texttt{\scriptsize compiler} — компилятор, который собирается с помощью rukaml
+                \item \texttt{\scriptsize program} — программа, которая собирается с помощью \texttt{\scriptsize compiler}
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+    \frametitle{Тестирование}
+    \begin{itemize}
+        \item В основном, писались системные тесты, проверяющие работу сразу всех этапов компиляции
+        \item Компилятор, собираемый с помощью rukaml, тестировался путём сравнения поведения с ocamlopt
+        \item Процент покрытия измерялся с помощью утилиты \texttt\small{bisect\_ppx}
+              \begin{itemize}
+                  \item Результат: 79~\% по строкам
+              \end{itemize}
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+    \frametitle{Результаты}
+    \begin{itemize}
+        \item Стандартная библиотека расширена ранее упомянутыми примитивами
+        \item Реализовано манглирование имён и разрешение внешних ссылок
+        \item Благодаря внесённым изменениям, с помощью rukaml удалось собрать простой компилятор
+              \begin{itemize}
+                  \item Принципиальных ограничений, не позволяющих собирать с помощью rukaml более сложные языковые инструменты, не выявлено
+              \end{itemize}
+        \item Выступление с докладом на секционном заседании конференции СПбПУ «Современные технологии в теории и практике программирования»
+              \begin{itemize}
+                  \item Тезисы доклада включены в сборник материалов конференции, проиндексированный в РИНЦ
+              \end{itemize}
+    \end{itemize}
+\end{frame}
+
+
+\end{document}

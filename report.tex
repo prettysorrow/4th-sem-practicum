@@ -1,0 +1,117 @@
+% Данный файл распространяетсяя под лицензией CC BY 4.0. Текст лицензии размещён на https://creativecommons.org/licenses/by/4.0/
+% (c) Кафедра системного программирования, 2025
+
+\documentclass[a4paper]{article}
+
+\usepackage[a4paper, top=8mm, bottom=8mm, left=8mm, right=8mm]{geometry}
+
+\usepackage{polyglossia}
+\setdefaultlanguage[babelshorthands=true]{russian}
+\setotherlanguage{english}
+
+\usepackage{fontspec}
+\setmainfont{FreeSerif}
+\newfontfamily{\russianfonttt}[Scale=0.7]{DejaVuSansMono}
+
+\usepackage[tiny, compact]{titlesec}
+
+\usepackage{titling}
+\setlength{\droptitle}{-1cm}
+\pretitle{\begin{center}\begin{bfseries}\Large}
+\posttitle{\par\end{bfseries}\end{center}}
+\preauthor{\begin{center}\normalsize}
+\postauthor{\par\end{center}\vspace{-1.8cm}}
+
+\usepackage{hyperref}
+\usepackage{bookmark}
+\usepackage{csquotes}
+
+\title{Разработка самовоспроизводящегося компилятора}
+
+\author{Балышев Артем Максимович}
+
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{flushright}
+    Группа: \emph{\enquote{24.Б72-мм}}
+
+    Кафедра: \emph{кафедра системного программирования}
+
+    Научный руководитель: \emph{Косарев Дмитрий Сергеевич}
+
+    Номер семестра практики: \emph{4}
+\end{flushright}
+
+
+\section{Постановка задачи}
+
+Работа выполняется в рамках проекта «rukaml» по разработке компилятора функционального языка. \textbf{Целью работы является} обеспечение возможности сборки языковых инструментов с помощью \texttt{\large rukaml}.
+
+Конечными пользователями продукта являются другие разработчики, в частности компиляторные инженеры.
+
+Значимость результатов работы заключается в демонстрации возможности развития проекта в качестве полноценного инструмента сборки.
+
+\section{Описание предлагаемого решения}
+
+Предлагается доработать \texttt{\large rukaml} до состояния, в котором он способен собрать простой компилятор подмножества языка C, написанный вручную.
+
+
+Язык C выбран в силу относительной простоты написания компиляторов для него. Написание нового компилятора C вместо поиска существующего решения и попыток обеспечить его сборку обосновывается тем, что \texttt{\large rukaml} поддерживает лишь сильно ограниченное подмножество языка OCaml.
+
+
+Реализация обоих компиляторов осуществлялась на языке OCaml, реализация стандартной библиотеки \texttt{\large rukaml} — на языке C.
+
+
+В \texttt{\large rukaml} кодогенерация реализовывалась для архитектуры AMD64, в компиляторе C — для архитектуры RISC-V 64.
+
+
+\section{Тестирование}
+
+
+\begin{itemize}
+    \item Написание модульных тестов для отдельных компонентов \texttt{\large rukaml}
+    \item Написание системных тестов для \texttt{\large rukaml}, проверяющих работоспособность сразу всех этапов компиляции
+    \item Сравнение поведения компилируемых программ при компиляции с помощью \texttt{\large ocamlopt} и с помощью \texttt{\large rukaml}
+    \item Проведение ручного тестирования компилятора C, собранного как с помощью \texttt{\large rukaml}, так и с помощью \texttt{\large ocamlopt}
+\end{itemize}
+
+
+Тестовое покрытие, измеренное с помощью утилиты \texttt{\large bisect\_ppx}, составило 79~\% строк.
+
+
+\section{Заключение}
+
+В ходе выполнения работы получены следующие результаты:
+
+
+\begin{itemize}
+    \item Расширение стандартной библиотеки \texttt{\large rukaml} примитивами, необходимыми для сборки консольных утилит:
+          \begin{itemize}
+              \item Форматированный вывод
+              \item Обработка аргументов командной строки
+              \item Работа с файловой системой
+          \end{itemize}
+    \item Реализация преобразования имён (англ. name mangling) и разрешение псевдонимов для примитивов стандартной библиотеки, необходимые для обеспечения непротиворечивости представления компилируемой программы на этапе кодогенерации
+    \item Написание простого компилятора, транслирующего подмножество языка C в ассемблерный код RISC-V 64, и его сборка с помощью \texttt{\large rukaml}
+    \item Выступление с докладом на секционном заседании конференции СПбПУ «Современные технологии в теории и практике программирования»
+          \begin{itemize}
+              \item Тезисы доклада включены в сборник материалов конференции, проиндексированный в РИНЦ
+          \end{itemize}
+\end{itemize}
+
+Ссылки на пулл-реквесты:
+\begin{itemize}
+    \item https://github.com/Kakadu/rukaml/pull/26
+    \item https://github.com/Kakadu/rukaml/pull/27
+    \item https://github.com/Kakadu/rukaml/pull/28
+\end{itemize}
+
+Техническая документация: в описании к пулл-реквестам прилагаются описания изменений.
+
+Решение находится на этапе кодревью и рефакторинга.
+
+\end{document}
